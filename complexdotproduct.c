@@ -16,7 +16,7 @@ int main()
     // https://www.geeksforgeeks.org/const-qualifier-in-c/
 
     // Number of elements in array
-    const int N = 1<<27; // =2^26=67,108,864
+    const int N = 1<<26; // =2^26=67,108,864
 
     // Why 2^26? Because it's large enough for the timers to be accurate, large
     // enough that it doesn't fit in CPU cache. Also a multiple of 8 which means
@@ -165,16 +165,7 @@ int main()
 //  sumR=1138.747681, sumI=-3531.189453    
 //  Elapsed time: 0.041000000000000 seconds
 //
-// For N = 2^27 (with optimization flags enabled):
-//  Initializing array: 134217728
-//  Non-vectorized
-//  sumR=413.578583, sumI=-8374.754883     
-//  Elapsed time: 0.130000000000000 seconds
-//  Vectorized
-//  sumR=413.302795, sumI=-8374.585938     
-//  Elapsed time: 0.071000000000000 seconds
-//
-// For N = 2^27 (with optimization flags disabled):
+// For N = 2^27 (with optimization flags DISABLED):
 //  Initializing array: 134217728
 //  Non-vectorized
 //  sumR=413.578583, sumI=-8374.754883     
@@ -182,6 +173,15 @@ int main()
 //  Vectorized
 //  sumR=413.302795, sumI=-8374.585938     
 //  Elapsed time: 0.086000000000000 seconds
+//
+// For N = 2^27 (with optimization flags ENABLED):
+//  Initializing array: 134217728
+//  Non-vectorized
+//  sumR=413.578583, sumI=-8374.754883     
+//  Elapsed time: 0.130000000000000 seconds
+//  Vectorized
+//  sumR=413.302795, sumI=-8374.585938     
+//  Elapsed time: 0.071000000000000 seconds
 //
 // For N = 2^30 (caused RAM to go to >90%):
 //  Initializing array: 1073741824
@@ -191,3 +191,8 @@ int main()
 //  Vectorized
 //  sumR=1659.198364, sumI=833.785645
 //  Elapsed time: 1.022000000000000 seconds
+//
+//
+// NOTE: would be better to have a test where the exact value is known so we can
+//       calculate the % error for vectorization vs non-vectorization.
+//       (e.g. approximating Pi)
