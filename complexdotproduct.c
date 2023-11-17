@@ -23,7 +23,7 @@ int main()
     // our 256-vectors will all fit exactly (so can ignore remainder elements).
     // https://www.youtube.com/watch?v=AT5nuQQO96o&t=3288s
 
-    // Allocate N float32s (4 bytes) worth of memory aligned to a cacheline boundary (ALIGN)
+    // Allocate N float32s (N*4 bytes) worth of memory aligned to a cacheline boundary (ALIGN)
     float* A = (float*)_aligned_malloc(N * sizeof(float), ALIGN);
     float* B = (float*)_aligned_malloc(N * sizeof(float), ALIGN);  
 
@@ -93,36 +93,36 @@ int main()
     
     // Alias of the float32 arrays A and B, as arrays of 256-bit packed single vectors (__m256)
     // The "(__m256*)" is essential here! Difference between malloc and (int *)malloc in C: https://stackoverflow.com/q/21146981/7875204 
-    __m256 *a = (__m256*)A;
-    __m256 *b = (__m256*)B;
+    __m256* a = (__m256*)A;
+    __m256* b = (__m256*)B;
 
     // Number of 256-bit vectors in the array
     const int n = (N / vectorLength);
 
     // Seperate multiply and add intrinsic functions
-    for (int j = 0; j < n; j++)
-    {
-        __m256 cr = _mm256_mul_ps(a[j], b[j]); // |ai_3*bi_3|ar_3*br_3|ai_2*bi_2|ar_2*br_2|ai_1*bi_1|ar_1*br_1|ai_0*bi_0|ar_0*br_0|
-        __m256 bConj = _mm256_mul_ps(b[j], conj); // |-bi_3|br_3|-bi_2|br_2|-bi_1|br_1|-bi_0|br_0|
-        __m256 bFlip = _mm256_permute_ps(bConj, 0b10110001); // |br_3|-bi_3|br_2|-bi_2|br_1|-bi_1|br_0|-bi_0| <- [2,3,0,1] real and imaginary swapping
-        __m256 ci = _mm256_mul_ps(a[j], bFlip); // |ai_3*br_3|-ar_3*bi_3|ai_2*br_2|-ar_2*bi_2|ai_1*br_1|-ar_1*bi_1|ai_0*br_0|-ar_0*bi_0|
-        sumr = _mm256_add_ps(sumr, cr);
-        sumi = _mm256_add_ps(sumi, ci);
-    }
-     
-    // // Fused multiply-add intrinsic function
     // for (int j = 0; j < n; j++)
     // {
-    //     sumr = _mm256_fmadd_ps(a[j], b[j], sumr);
+    //     __m256 cr = _mm256_mul_ps(a[j], b[j]); // |ai_3*bi_3|ar_3*br_3|ai_2*bi_2|ar_2*br_2|ai_1*bi_1|ar_1*br_1|ai_0*bi_0|ar_0*br_0|
     //     __m256 bConj = _mm256_mul_ps(b[j], conj); // |-bi_3|br_3|-bi_2|br_2|-bi_1|br_1|-bi_0|br_0|
     //     __m256 bFlip = _mm256_permute_ps(bConj, 0b10110001); // |br_3|-bi_3|br_2|-bi_2|br_1|-bi_1|br_0|-bi_0| <- [2,3,0,1] real and imaginary swapping
-    //     sumi = _mm256_fmadd_ps(a[j], bFlip, sumi);
+    //     __m256 ci = _mm256_mul_ps(a[j], bFlip); // |ai_3*br_3|-ar_3*bi_3|ai_2*br_2|-ar_2*bi_2|ai_1*br_1|-ar_1*bi_1|ai_0*br_0|-ar_0*bi_0|
+    //     sumr = _mm256_add_ps(sumr, cr);
+    //     sumi = _mm256_add_ps(sumi, ci);
     // }
+     
+    // Fused multiply-add intrinsic function
+    for (int j = 0; j < n; j++)
+    {
+        sumr = _mm256_fmadd_ps(a[j], b[j], sumr);
+        __m256 bConj = _mm256_mul_ps(b[j], conj); // |-bi_3|br_3|-bi_2|br_2|-bi_1|br_1|-bi_0|br_0|
+        __m256 bFlip = _mm256_permute_ps(bConj, 0b10110001); // |br_3|-bi_3|br_2|-bi_2|br_1|-bi_1|br_0|-bi_0| <- [2,3,0,1] real and imaginary swapping
+        sumi = _mm256_fmadd_ps(a[j], bFlip, sumi);
+    }
 
     // alias the vector as a float array
     // The "(float*)" is essential here! Difference between malloc and (int *)malloc in C: https://stackoverflow.com/q/21146981/7875204 
-    float *sr = (float*)&sumr;
-    float *si = (float*)&sumi;
+    float* sr = (float*)&sumr;
+    float* si = (float*)&sumi;
 
     // // Lazy mode
     // // real
@@ -145,6 +145,10 @@ int main()
 
     // Stop the timer
     clock_t end2 = clock();
+
+    // Free N float32s (N*4 bytes) worth of memory (slow process, do after timer)
+    _aligned_free(A);
+    _aligned_free(B);
 
     // Calculate runtime
     double dt2 = (double)(end2 - begin2) / CLOCKS_PER_SEC;
