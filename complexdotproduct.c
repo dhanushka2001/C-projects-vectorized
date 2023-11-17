@@ -3,10 +3,10 @@
 #include <immintrin.h>          // AVX, AVX2, FMA, AVX-512, ...
 #include <time.h>               // Timers for profiling code performance
 
-#define ALIGN 64                // Align memory to a cacheline boundary (64 bytes for my CPU)
+#define ALIGN 64               // Align memory to a cacheline boundary (64 bytes for my CPU)
 #define vectorLength 8          // 8 float32s per 256-bit vector (8*32=256)
 
-// Full credit to Joel Carpenter for the code and explaining SIMD and vectorization
+// Credit to Joel Carpenter for the original code and explaining SIMD and vectorization
 // using AVX intrinsic functions: https://www.youtube.com/watch?v=AT5nuQQO96o
 
 int main()
@@ -16,7 +16,7 @@ int main()
     // https://www.geeksforgeeks.org/const-qualifier-in-c/
 
     // Number of elements in array
-    const int N = 1<<26; // =2^26=67,108,864
+    const int N = 1<<29; // =2^26=67,108,864
 
     // Why 2^26? Because it's large enough for the timers to be accurate, large
     // enough that it doesn't fit in CPU cache. Also a multiple of 8 which means
@@ -37,6 +37,7 @@ int main()
         A[i] = ra;
         B[i] = rb;
     }
+    printf("Initialized\n");
 
     /*************************** Non-vectorized implementation ****************************/
     printf("Non-vectorized\n");
@@ -99,6 +100,10 @@ int main()
     // Number of 256-bit vectors in the array
     const int n = (N / vectorLength);
 
+    // Initialize bConj and bFlip
+    __m256 bConj;
+    __m256 bFlip;
+
     // Seperate multiply and add intrinsic functions
     // for (int j = 0; j < n; j++)
     // {
@@ -114,9 +119,15 @@ int main()
     for (int j = 0; j < n; j++)
     {
         sumr = _mm256_fmadd_ps(a[j], b[j], sumr);
-        __m256 bConj = _mm256_mul_ps(b[j], conj); // |-bi_3|br_3|-bi_2|br_2|-bi_1|br_1|-bi_0|br_0|
-        __m256 bFlip = _mm256_permute_ps(bConj, 0b10110001); // |br_3|-bi_3|br_2|-bi_2|br_1|-bi_1|br_0|-bi_0| <- [2,3,0,1] real and imaginary swapping
+        bConj = _mm256_mul_ps(b[j], conj); // |-bi_3|br_3|-bi_2|br_2|-bi_1|br_1|-bi_0|br_0|
+        bFlip = _mm256_permute_ps(bConj, 0b10110001); // |br_3|-bi_3|br_2|-bi_2|br_1|-bi_1|br_0|-bi_0| <- [2,3,0,1] real and imaginary swapping
         sumi = _mm256_fmadd_ps(a[j], bFlip, sumi);
+
+        // Manual loop unrolling
+        // sumr = _mm256_fmadd_ps(a[j+1], b[j+1], sumr);
+        // bConj = _mm256_mul_ps(b[j+1], conj); // |-bi_3|br_3|-bi_2|br_2|-bi_1|br_1|-bi_0|br_0|
+        // bFlip = _mm256_permute_ps(bConj, 0b10110001); // |br_3|-bi_3|br_2|-bi_2|br_1|-bi_1|br_0|-bi_0| <- [2,3,0,1] real and imaginary swapping
+        // sumi = _mm256_fmadd_ps(a[j+1], bFlip, sumi);
     }
 
     // alias the vector as a float array
@@ -200,3 +211,6 @@ int main()
 // NOTE: would be better to have a test where the exact value is known so we can
 //       calculate the % error for vectorization vs non-vectorization.
 //       (e.g. approximating Pi)
+//
+// For some reason, when I comment the non-vectorized code, the vectorized code
+// becoems slower...?
