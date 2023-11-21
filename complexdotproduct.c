@@ -244,7 +244,7 @@ int main()
 //  sumR=-231.688110, sumI=-6191.189453    
 //  Elapsed time: 0.287s, 0.362s, 0.318s, 0.302s
 //
-// For N = 2^29 (O1 enabled):
+// For N = 2^29 (O1 enabled, funroll-loops disabled):
 //  Initializing array: 536870912
 //  Initialized   
 //  Non-vectorized
@@ -253,3 +253,13 @@ int main()
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453
 //  Elapsed time: 0.357s, 0.288s, 0.289s
+//
+// For N = 2^29 (O0 (default) enabled, funroll-loops disabled):
+//  Initializing array: 536870912
+//  Initialized   
+//  Non-vectorized
+//  sumR=-231.480316, sumI=-6193.933594
+//  Elapsed time: 1.976s, 1.928s, 1.916s
+//  Vectorized
+//  sumR=-231.688110, sumI=-6191.189453
+//  Elapsed time: 0.590s, 0.549s, 0.726s
