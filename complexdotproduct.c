@@ -9,6 +9,10 @@
 // Credit to Joel Carpenter for the original code and explaining SIMD and vectorization
 // using AVX intrinsic functions: https://www.youtube.com/watch?v=AT5nuQQO96o
 
+// Difference between SIMD, multi-threading, and multi-processing: https://stackoverflow.com/questions/59623054/difference-between-simd-and-multi-threading
+// Multithreaded SIMD: https://medium.com/@sim30217/multithreaded-simd-5139a49db086#:~:text=By%20combining%20multithreading%20and%20SIMD,processing%20multiple%20pixels%20at%20once).
+
+
 int main()
 {
     // Using the const qualifier in C is a good practice when we want to ensure that
@@ -24,6 +28,7 @@ int main()
     // https://www.youtube.com/watch?v=AT5nuQQO96o&t=3288s
 
     // Allocate N float32s (N*4 bytes) worth of memory aligned to a cacheline boundary (ALIGN)
+    // Estimate RAM usage = 2*N*4/(10^9) GB
     float* A = (float*)_aligned_malloc(N * sizeof(float), ALIGN);
     float* B = (float*)_aligned_malloc(N * sizeof(float), ALIGN);  
 
@@ -75,7 +80,7 @@ int main()
 
     // print result
     printf("sumR=%.6f, sumI=%.6f\n", sumR1, sumI1);
-    printf("Elapsed time: %0.15f seconds\n", dt1);
+    printf("Elapsed time: %0.3fs\n", dt1);
 
 
     /*************************** Vectorized implementation ********************************/
@@ -108,8 +113,8 @@ int main()
     // for (int j = 0; j < n; j++)
     // {
     //     __m256 cr = _mm256_mul_ps(a[j], b[j]); // |ai_3*bi_3|ar_3*br_3|ai_2*bi_2|ar_2*br_2|ai_1*bi_1|ar_1*br_1|ai_0*bi_0|ar_0*br_0|
-    //     __m256 bConj = _mm256_mul_ps(b[j], conj); // |-bi_3|br_3|-bi_2|br_2|-bi_1|br_1|-bi_0|br_0|
-    //     __m256 bFlip = _mm256_permute_ps(bConj, 0b10110001); // |br_3|-bi_3|br_2|-bi_2|br_1|-bi_1|br_0|-bi_0| <- [2,3,0,1] real and imaginary swapping
+    //     bConj = _mm256_mul_ps(b[j], conj); // |-bi_3|br_3|-bi_2|br_2|-bi_1|br_1|-bi_0|br_0|
+    //     bFlip = _mm256_permute_ps(bConj, 0b10110001); // |br_3|-bi_3|br_2|-bi_2|br_1|-bi_1|br_0|-bi_0| <- [2,3,0,1] real and imaginary swapping
     //     __m256 ci = _mm256_mul_ps(a[j], bFlip); // |ai_3*br_3|-ar_3*bi_3|ai_2*br_2|-ar_2*bi_2|ai_1*br_1|-ar_1*bi_1|ai_0*br_0|-ar_0*bi_0|
     //     sumr = _mm256_add_ps(sumr, cr);
     //     sumi = _mm256_add_ps(sumi, ci);
@@ -166,7 +171,7 @@ int main()
 
     // print result
     printf("sumR=%.6f, sumI=%.6f\n", sumR2, sumI2);
-    printf("Elapsed time: %0.15f seconds\n", dt2);
+    printf("Elapsed time: %0.3fs\n", dt2);
 }
 
 // Test results (with "-ftree-vectorize -funroll-loops -O3" optimization flags):
@@ -214,3 +219,37 @@ int main()
 //
 // For some reason, when I comment the non-vectorized code, the vectorized code
 // becoems slower...?
+//
+// O2 seems to be faster than O3! Should test fairly by seperating vectorized and
+// non-vectorized code to 2 seperate files to make code smaller. O3 generates more
+// machine code which can lead to cache misses.
+//
+// For N = 2^29 (O3 enabled, funroll-loops made little difference):
+//  Initializing array: 536870912
+//  Initialized   
+//  Non-vectorized
+//  sumR=-231.465698, sumI=-6194.026367    
+//  Elapsed time: 0.527s, 0.548s, 0.479s
+//  Vectorized
+//  sumR=-231.688110, sumI=-6191.189453    
+//  Elapsed time: 0.306s, 0.328s, 0.299s
+//
+// For N = 2^29 (O2 enabled, funroll-loops made little difference, slightly worse):
+//  Initializing array: 536870912
+//  Initialized   
+//  Non-vectorized
+//  sumR=-231.465698, sumI=-6194.026367    
+//  Elapsed time: 0.365s, 0.622s, 0.512s, 0.432s
+//  Vectorized
+//  sumR=-231.688110, sumI=-6191.189453    
+//  Elapsed time: 0.287s, 0.362s, 0.318s, 0.302s
+//
+// For N = 2^29 (O1 enabled):
+//  Initializing array: 536870912
+//  Initialized   
+//  Non-vectorized
+//  sumR=-231.480316, sumI=-6193.933594
+//  Elapsed time: 0.436s, 0.538s, 0.411s   
+//  Vectorized
+//  sumR=-231.688110, sumI=-6191.189453
+//  Elapsed time: 0.357s, 0.288s, 0.289s
