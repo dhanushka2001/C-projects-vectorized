@@ -45,42 +45,42 @@ int main()
     printf("Initialized\n");
 
     /*************************** Non-vectorized implementation ****************************/
-    printf("Non-vectorized\n");
+    // printf("Non-vectorized\n");
 
-    // Start the timer
-    clock_t begin = clock();
+    // // Start the timer
+    // clock_t begin = clock();
 
-    // Initialize the real and imaginary components of the summation of the a.b* products
-    float sumR1 = 0;
-    float sumI1 = 0;
+    // // Initialize the real and imaginary components of the summation of the a.b* products
+    // float sumR1 = 0;
+    // float sumI1 = 0;
 
-    for (int i = 0; i < N; i += 2)
-    {
-        // Real and imaginary components of A
-        float Ar = A[i];
-        float Ai = A[i+1];
+    // for (int i = 0; i < N; i += 2)
+    // {
+    //     // Real and imaginary components of A
+    //     float Ar = A[i];
+    //     float Ai = A[i+1];
 
-        // Real and imaginary components of B conjugate
-        float Br = B[i];
-        float Bi = -B[i+1];
+    //     // Real and imaginary components of B conjugate
+    //     float Br = B[i];
+    //     float Bi = -B[i+1];
 
-        // Real and imaginary components of the multiplication of A.B*
-        float Cr = Ar*Br - Ai*Bi;
-        float Ci = Ar*Bi + Ai*Br;
+    //     // Real and imaginary components of the multiplication of A.B*
+    //     float Cr = Ar*Br - Ai*Bi;
+    //     float Ci = Ar*Bi + Ai*Br;
 
-        // Add the product result to the summation
-        sumR1 += Cr;
-        sumI1 += Ci;
-    }
-    // Stop the timer
-    clock_t end = clock();
+    //     // Add the product result to the summation
+    //     sumR1 += Cr;
+    //     sumI1 += Ci;
+    // }
+    // // Stop the timer
+    // clock_t end = clock();
 
-    // Calculate runtime
-    double dt1 = (double)(end - begin) / CLOCKS_PER_SEC;
+    // // Calculate runtime
+    // double dt1 = (double)(end - begin) / CLOCKS_PER_SEC;
 
-    // print result
-    printf("sumR=%.6f, sumI=%.6f\n", sumR1, sumI1);
-    printf("Elapsed time: %0.3fs\n", dt1);
+    // // print result
+    // printf("sumR=%.6f, sumI=%.6f\n", sumR1, sumI1);
+    // printf("Elapsed time: %0.3fs\n", dt1);
 
 
     /*************************** Vectorized implementation ********************************/
@@ -218,7 +218,7 @@ int main()
 //       (e.g. approximating Pi)
 //
 // For some reason, when I comment the non-vectorized code, the vectorized code
-// becoems slower...?
+// becomes slower...?
 //
 // O2 seems to be faster than O3! Should test fairly by seperating vectorized and
 // non-vectorized code to 2 seperate files to make code smaller. O3 generates more
@@ -233,6 +233,7 @@ int main()
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453    
 //  Elapsed time: 0.306s, 0.328s, 0.299s
+//  Elapsed time (non-vectorized code commented out):
 //
 // For N = 2^29 (O2 enabled, funroll-loops made little difference, slightly worse):
 //  Initializing array: 536870912
@@ -243,16 +244,18 @@ int main()
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453    
 //  Elapsed time: 0.287s, 0.362s, 0.318s, 0.302s
+//  Elapsed time (non-vectorized code commented out): 0.447s, 0.436s, 0.419s, 0.484s
 //
 // For N = 2^29 (O1 enabled, funroll-loops disabled):
 //  Initializing array: 536870912
 //  Initialized   
 //  Non-vectorized
 //  sumR=-231.480316, sumI=-6193.933594
-//  Elapsed time: 0.436s, 0.538s, 0.411s   
+//  Elapsed time: 0.436s, 0.538s, 0.411s, 0.578s 
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453
-//  Elapsed time: 0.357s, 0.288s, 0.289s
+//  Elapsed time: 0.357s, 0.288s, 0.289s, 0.294s
+//  Elapsed time (non-vectorized code commented out): 0.456s, 0.395s, 0.356s, 0.336s
 //
 // For N = 2^29 (O0 (default) enabled, funroll-loops disabled):
 //  Initializing array: 536870912
