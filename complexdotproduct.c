@@ -229,22 +229,22 @@ int main()
 //  Initialized   
 //  Non-vectorized
 //  sumR=-231.465698, sumI=-6194.026367    
-//  Elapsed time: 0.527s, 0.548s, 0.479s
+//  Elapsed time:                                     0.527s, 0.548s, 0.479s, 0.533s, 0.505s, 0.550s  (avg=0.524s)          Using Powershell:   0.537s, 0.450s, 0.459s, 0.454s, 0.543s, 0.637s  (avg=0.513s)
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453    
-//  Elapsed time: 0.306s, 0.328s, 0.299s
-//  Elapsed time (non-vectorized code commented out):
+//  Elapsed time:                                     0.306s, 0.328s, 0.299s, 0.283s, 0.298s, 0.278s  (avg=0.299s)                              0.296s, 0.273s, 0.280s, 0.274s, 0.266s, 0.290s  (avg=0.280s)
+//  Elapsed time (non-vectorized code commented out): 0.421s, 0.380s, 0.335s, 0.343s, 0.282s, 0.338s  (avg=0.350s)                              0.444s, 0.434s, 0.426s, 0.393s, 0.456s, 0.412s  (avg=0.428s)
 //
 // For N = 2^29 (O2 enabled, funroll-loops made little difference, slightly worse):
 //  Initializing array: 536870912
 //  Initialized   
 //  Non-vectorized
 //  sumR=-231.465698, sumI=-6194.026367    
-//  Elapsed time: 0.365s, 0.622s, 0.512s, 0.432s
+//  Elapsed time:                                     0.365s, 0.622s, 0.512s, 0.432s, 0.614s, 0.523s  (avg=0.511s)
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453    
-//  Elapsed time: 0.287s, 0.362s, 0.318s, 0.302s
-//  Elapsed time (non-vectorized code commented out): 0.447s, 0.436s, 0.419s, 0.484s
+//  Elapsed time:                                     0.287s, 0.362s, 0.318s, 0.302s, 0.298s, 0.286s  (avg=0.309s)
+//  Elapsed time (non-vectorized code commented out): 0.447s, 0.436s, 0.419s, 0.484s, 0.448s, 0.509s  (avg=0.457s)
 //
 // For N = 2^29 (O1 enabled, funroll-loops disabled):
 //  Initializing array: 536870912
@@ -254,7 +254,7 @@ int main()
 //  Elapsed time: 0.436s, 0.538s, 0.411s, 0.578s 
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453
-//  Elapsed time: 0.357s, 0.288s, 0.289s, 0.294s
+//  Elapsed time:                                     0.357s, 0.288s, 0.289s, 0.294s
 //  Elapsed time (non-vectorized code commented out): 0.456s, 0.395s, 0.356s, 0.336s
 //
 // For N = 2^29 (O0 (default) enabled, funroll-loops disabled):
