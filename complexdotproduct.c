@@ -251,7 +251,7 @@ int main()
 //  Initialized   
 //  Non-vectorized
 //  sumR=-231.480316, sumI=-6193.933594
-//  Elapsed time: 0.436s, 0.538s, 0.411s, 0.578s 
+//  Elapsed time:                                     0.436s, 0.538s, 0.411s, 0.578s 
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453
 //  Elapsed time:                                     0.357s, 0.288s, 0.289s, 0.294s
@@ -262,7 +262,7 @@ int main()
 //  Initialized   
 //  Non-vectorized
 //  sumR=-231.480316, sumI=-6193.933594
-//  Elapsed time: 1.976s, 1.928s, 1.916s
+//  Elapsed time:                                     1.976s, 1.928s, 1.916s
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453
-//  Elapsed time: 0.590s, 0.549s, 0.726s
+//  Elapsed time:                                     0.590s, 0.549s, 0.726s
