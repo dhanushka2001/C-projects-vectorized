@@ -1,0 +1,52 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: gcc.exe build active file",
+            "command": "C:\\msys64\\mingw64\\bin\\gcc.exe",
+            "args": [
+                // gcc [options] [source files] [object files] [-o output file]
+                // gcc -g -Wall -mavx2 -march=haswell -O3 complexdotproduct.c -o complexdotproduct
+                "-fdiagnostics-color=always",
+                "-g",                           // "gcc -g" generates debug information to be used by GDB debugger. https://www.rapidtables.com/code/linux/gcc/gcc-g.html
+                "-Wall",                        // "gcc -Wall" enables all compiler's warning messages. This option should always be used, in order to generate better code. https://www.rapidtables.com/code/linux/gcc/gcc-wall.html
+                //"--coverage",
+                //"-fopenmp",                   // needed for GCC to process all the OpenMP pragmas "#pragma omp" (I don't need it since I haven't used omp). https://stackoverflow.com/a/27690947
+                
+                "-march=haswell",
+                "-mavx2",                       // let GCC use AVX / AVX2 / AVX-512 instructions for anything it thinks is a good idea when compiling your code, including but not limited to auto-vectorization of loops, if you also enable that. https://stackoverflow.com/a/71234534
+                                                // interesting to read about AVX2 vs SSE4 etc.
+                              
+                //"-ftree-vectorize",             // Enable auto-vectorization. This flag enables -ftree-loop-vectorize and -ftree-slp-vectorize if not explicitly specified. https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+                                                // https://stackoverflow.com/a/33627001 "GCC will only use SSE4.1 if you tell it to e.g with -msse4.1 or something higher such as -mavx." which is why we're using the "-mavx2" flag.
+                                                // Writing Autovectorizable Code: https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookWritingAutovectorizableCode
+                                                // Parallelizing nested loops with OMP: https://ppc.cs.aalto.fi/ch3/nested/
+                
+                //"-funroll-loops",               // when to use funroll-loops: https://stackoverflow.com/a/24197213 (TLDR: unrolling provides more benefits for shorter loops (3) but ends up trashing performance (and leads to cache misses) for lagrer loops (3000). Usually, a smart compiler will take a decent guess about which loops to unroll.)
+                                                // His answer is not 100% true, unrolling a 3000-loop doesn't mean doing/storing 3000 computations in cache at once, the compiler can divvy up the computations in batches.
+                                                // On modern processors, loop unrolling is often counterproductive, as the increased code size can cause more cache misses. https://en.wikipedia.org/wiki/Loop_unrolling
+                                                // Loop unrolling does not work if the compiler can't predict the exact amount of iterations of the loop at compile time. This means that if your loop length is variable, the flag will have no effect. E.g. if the loop length was determined by a variable calculated only after compile-time (during runtime). In our case this isn't a worry since the array length is determibed by n_particles which is fixed at the start.
+                                                // https://www.webopedia.com/definitions/superword-level-parallelism/ (SLP/loop unrolling. "basic block vectorized" vs "loop vectorized")
+                                                // Loop unrolling is beneficial because it increases the number of operations performed in each iteration of the loop. Loop unrolling also enables the use of SIMD instruction sets such as NEON or SVE. SLP vectorization enables the compiler to combine multiple nearby independent operations into a single vector instruction. https://developer.arm.com/documentation/102699/0100/Optimizing-with-auto-vectorization
+
+                //"-msse2",                       // https://stackoverflow.com/a/10687419 It's fun reading comments from 10 years ago of people warning against using mavx2 since processors at the time didn't support avx.
+
+                "-fopt-info-optimized",               // Controls optimization dumps from various optimization passes. Additionally, the options -optimized, -missed, -note, and -all can be provided. -fopt-info defaults to -optimized. https://gcc.gnu.org/onlinedocs/gcc/Developer-Options.html
+
+                "-O1",                          // https://qr.ae/pKokNT "-O2" vs "-O3" https://codeforces.com/blog/entry/96344
+                "${file}",
+                "-o",                           // gcc -o writes the build output to an output file. Syntax: $ gcc [options] [source files] [object files] -o output file. https://www.rapidtables.com/code/linux/gcc/gcc-o.html
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "compiler: C:\\msys64\\mingw64\\bin\\gcc.exe"
+        }
+    ],
+    "version": "2.0.0"
+}

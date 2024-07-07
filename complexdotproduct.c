@@ -20,7 +20,7 @@ int main()
     // https://www.geeksforgeeks.org/const-qualifier-in-c/
 
     // Number of elements in array
-    const int N = 1<<29; // =2^26=67,108,864
+    const unsigned long int N = 1<<28; // =2^27=134,217,728 <-- max
 
     // Why 2^26? Because it's large enough for the timers to be accurate, large
     // enough that it doesn't fit in CPU cache. Also a multiple of 8 which means
@@ -33,54 +33,54 @@ int main()
     float* B = (float*)_aligned_malloc(N * sizeof(float), ALIGN);  
 
     // Put some random numbers in the array from -1.0 to 1.0
-    printf("Initializing array: %i\n", N);
+    printf("Initializing array: %lu\n", N);
     srand(0);
-    for (int i = 0; i < N; i++)
+    for (unsigned long int i = 0; i < N; i++)
     {
-        float ra = (2.0f * ((float)rand()) / RAND_MAX) - 1.0f;
-        float rb = (2.0f * ((float)rand()) / RAND_MAX) - 1.0f;
+        float ra = 1.0f; //(2.0f * ((float)rand()) / RAND_MAX) - 1.0f;
+        float rb = 1.0f; //(2.0f * ((float)rand()) / RAND_MAX) - 1.0f;
         A[i] = ra;
         B[i] = rb;
     }
     printf("Initialized\n");
 
     /*************************** Non-vectorized implementation ****************************/
-    // printf("Non-vectorized\n");
+    printf("Non-vectorized\n");
 
-    // // Start the timer
-    // clock_t begin = clock();
+    // Start the timer
+    clock_t begin = clock();
 
-    // // Initialize the real and imaginary components of the summation of the a.b* products
-    // float sumR1 = 0;
-    // float sumI1 = 0;
+    // Initialize the real and imaginary components of the summation of the a.b* products
+    float sumR1 = 0;
+    float sumI1 = 0;
 
-    // for (int i = 0; i < N; i += 2)
-    // {
-    //     // Real and imaginary components of A
-    //     float Ar = A[i];
-    //     float Ai = A[i+1];
+    for (unsigned long int i = 0; i < N; i += 2)
+    {
+        // Real and imaginary components of A
+        float Ar = A[i];
+        float Ai = A[i+1];
 
-    //     // Real and imaginary components of B conjugate
-    //     float Br = B[i];
-    //     float Bi = -B[i+1];
+        // Real and imaginary components of B conjugate
+        float Br = B[i];
+        float Bi = -B[i+1];
 
-    //     // Real and imaginary components of the multiplication of A.B*
-    //     float Cr = Ar*Br - Ai*Bi;
-    //     float Ci = Ar*Bi + Ai*Br;
+        // Real and imaginary components of the multiplication of A.B*
+        float Cr = Ar*Br - Ai*Bi;
+        float Ci = Ar*Bi + Ai*Br;
 
-    //     // Add the product result to the summation
-    //     sumR1 += Cr;
-    //     sumI1 += Ci;
-    // }
-    // // Stop the timer
-    // clock_t end = clock();
+        // Add the product result to the summation
+        sumR1 += Cr;
+        sumI1 += Ci;
+    }
+    // Stop the timer
+    clock_t end = clock();
 
-    // // Calculate runtime
-    // double dt1 = (double)(end - begin) / CLOCKS_PER_SEC;
+    // Calculate runtime
+    double dt1 = (double)(end - begin) / CLOCKS_PER_SEC;
 
-    // // print result
-    // printf("sumR=%.6f, sumI=%.6f\n", sumR1, sumI1);
-    // printf("Elapsed time: %0.3fs\n", dt1);
+    // print result
+    printf("sumR=%.6f, sumI=%.6f\n", sumR1, sumI1);
+    printf("Elapsed time: %0.3fs\n", dt1);
 
 
     /*************************** Vectorized implementation ********************************/
@@ -140,7 +140,8 @@ int main()
     float* sr = (float*)&sumr;
     float* si = (float*)&sumi;
 
-    // // Lazy mode
+    /* Add up every element in the vector */
+    // // Lazy way
     // // real
     // float sumR2 = sr[0] + sr[1] + sr[2] + sr[3] + sr[4] + sr[5] + sr[6] + sr[7];
     // // imaginary
@@ -251,11 +252,11 @@ int main()
 //  Initialized   
 //  Non-vectorized
 //  sumR=-231.480316, sumI=-6193.933594
-//  Elapsed time:                                     0.436s, 0.538s, 0.411s, 0.578s 
+//  Elapsed time:                                     0.436s, 0.538s, 0.411s, 0.578s, 0.534s, 0.394s  (avg=0.482s)
 //  Vectorized
 //  sumR=-231.688110, sumI=-6191.189453
-//  Elapsed time:                                     0.357s, 0.288s, 0.289s, 0.294s
-//  Elapsed time (non-vectorized code commented out): 0.456s, 0.395s, 0.356s, 0.336s
+//  Elapsed time:                                     0.357s, 0.288s, 0.289s, 0.294s, 0.295s, 0.275s  (avg=0.300s)
+//  Elapsed time (non-vectorized code commented out): 0.456s, 0.395s, 0.356s, 0.336s, 0.473s, 0.423s  (avg=0.407s)
 //
 // For N = 2^29 (O0 (default) enabled, funroll-loops disabled):
 //  Initializing array: 536870912
